@@ -42,6 +42,15 @@ RUN add-apt-repository ppa:deadsnakes/ppa -y && \
     $APT_INSTALL \
     python3.11-dev
 
+RUN add-apt-repository ppa:deadsnakes/ppa -y && \
+    $APT_INSTALL \
+    python3.11-dev
+
+RUN add-apt-repository ppa:deadsnakes/ppa -y && \
+    $APT_INSTALL \
+    python3.11-dev
+
+
 # # Installing conda
 RUN curl --output anaconda.sh https://repo.anaconda.com/archive/Anaconda3-2023.09-0-Linux-x86_64.sh
 RUN chmod u+x anaconda.sh
@@ -52,6 +61,20 @@ RUN ln -s /root/anaconda3/bin/conda /usr/local/bin/conda
 RUN rm anaconda.sh
 RUN conda install pytorch torchvision torchaudio cpuonly -c pytorch
 RUN export PATH=/usr/local/cuda/bin:$PATH
+
+
+# Create and activate a virtual environment
+RUN apt-get update && apt-get install -y python3.11-venv python3-dev build-essential libssl-dev libffi-dev libpq-dev
+RUN python -m venv /opt/llm_env
+RUN /opt/llm_env/bin/pip install --upgrade pip
+
+
+WORKDIR /project
+# RUN mkdir project
+# COPY requirements.txt .
+# RUN pip install -r requirements.txt
+CMD ["/bin/bash"]
+
 
 # RUN ln -s /usr/bin/python3.11 /usr/local/bin/python3 && \
 #     ln -s /usr/bin/python3.11 /usr/local/bin/python
@@ -74,21 +97,6 @@ RUN export PATH=/usr/local/cuda/bin:$PATH
 # RUN sudo rm -rf cuda
 # RUN sudo ln -s /usr/local/cuda-12.3/  /usr/local/cuda
 
-# Create and activate a virtual environment
-RUN apt-get update && apt-get install -y python3.11-venv python3-dev build-essential libssl-dev libffi-dev libpq-dev
-RUN python -m venv /opt/llm_env
-RUN /opt/llm_env/bin/pip install --upgrade pip
-
-
-WORKDIR /project
-# RUN mkdir project
-# COPY requirements.txt .
-# RUN pip install -r requirements.txt
-CMD ["/bin/bash"]
-
-
-
-
 # docker run --runtime=nvidia -it docker.io/library/llm_env:1.1
 
 # # Add Tini. Tini operates as a process subreaper for jupyter. This prevents kernel crashes.
@@ -99,10 +107,7 @@ CMD ["/bin/bash"]
 # CMD ["jupyter", "notebook", "--port=8888", "--no-browser", "--ip=0.0.0.0", "--allow-root"]
 
 
-
-
-# 缺少torch和jupyterlab
-# 激活环境
+# lacking torch and jupyterlab
 # jupyter notebook --port=8888 --no-browser --ip=0.0.0.0 --allow-root
 
 # CUDA version and torch version control
@@ -111,7 +116,6 @@ CMD ["/bin/bash"]
 # wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run
 
 # Install Toolkit 1.8
-
 # wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
 # sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
 # wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda-repo-ubuntu2204-11-8-local_11.8.0-520.61.05-1_amd64.deb
@@ -123,7 +127,6 @@ CMD ["/bin/bash"]
 ## Rebuild 
 # docker build -t llm_env_cuda_without_python_dep:2.0 .
 ## not work
-
 
 ## Try docker images on docker hub
 
@@ -173,18 +176,13 @@ CMD ["/bin/bash"]
 # Cuda version is installed in tesla GPU not support pytorhc more than 1.13 so let's change the cuda version of the images.
 
 
-
 # check version compatible :https://pytorch.org/get-started/previous-versions/
 ## Trying to install the version of 
-
 
 ## Only tesla GPU K60 ONLY support maximum 11.4 and torch 1.12 but the autogptq needs to minimum version of torch with 1.13
 ## impossible to fine-tuning large language model.
 
-
 ## Let's try on paperspace and singularity
 ## module
 
-
 # AdVANCEE rag 02
-# 
