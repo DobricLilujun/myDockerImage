@@ -87,46 +87,13 @@ RUN /opt/llm_env_3.8/bin/pip install --upgrade pip
 RUN python3.11 -m venv /opt/llm_env_3.11
 RUN /opt/llm_env_3.11/bin/pip install --upgrade pip
 
-
-# Install the required packages
-RUN python3 -m pip --no-cache-dir install \
-    torch==1.9.1+cpu torchvision==0.10.1+cpu torchaudio==0.9.1+cpu torchtext==0.10.1+cpu \
-    datasets==1.12.0 \
-    jupyterlab==3.4.6 \
-    numpy==1.23.4 \
-    scipy==1.9.2 \
-    pandas==1.5.0 \
-    cloudpickle==2.2.0 \
-    scikit-image \
-    matplotlib==3.6.1 \
-    ipython==8.5.0 \
-    ipykernel==6.16.0 \
-    ipywidgets==8.0.2 \
-    cython==0.29.32 \
-    tqdm==4.64.1 \
-    gdown \
-    xgboost==1.6.2 \
-    pillow==9.2.0 \
-    seaborn==0.12.0 \
-    sqlalchemy==1.4.41 \
-    spacy==3.4.1 \
-    nltk==3.7 \
-    boto3==1.24.90 \
-    tabulate==0.9.0 \
-    future==0.18.2 \
-    gradient==2.0.6 \
-    jsonify==0.5 \
-    opencv-python==4.6.0.66 \
-    sentence-transformers==2.2.2 \
-    wandb==0.13.4 \
-    awscli==1.25.91 \
-    jupyterlab-snippets==0.4.1 \
-    tornado==6.1
+COPY requirements.txt .
+RUN pip install -r requirements.txt
 
 EXPOSE 8888
 
-
 WORKDIR /project
+
 # RUN mkdir project
 # COPY requirements.txt .
 # RUN pip install -r requirements.txt
