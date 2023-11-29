@@ -1,4 +1,4 @@
-FROM ubuntu:22.04
+FROM ubuntu:20.04
 RUN yes| unminimize
 
 # This docker includes basic softwares of linux based on ubuntu:22.04
@@ -38,18 +38,34 @@ RUN apt-get update && \
     nvidia-cuda-toolkit\
     python3-pip
 
-RUN add-apt-repository ppa:deadsnakes/ppa -y && \
-    $APT_INSTALL \
-    python3.11-dev
+RUN add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y python3.8 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.8 1
 
-RUN add-apt-repository ppa:deadsnakes/ppa -y && \
-    $APT_INSTALL \
-    python3.11-dev
+RUN apt-get install -y python3.9 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.9 2
 
-RUN add-apt-repository ppa:deadsnakes/ppa -y && \
-    $APT_INSTALL \
-    python3.11-dev
+RUN apt-get install -y python3.11 && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python3.11 3
 
+RUN apt-get install -y python3-pip
+
+RUN update-alternatives --set python3 /usr/bin/python3.8
+
+RUN python3 --version && \
+    python3.8 --version && \
+    python3.9 --version && \
+    python3.11 --version
+
+RUN apt-get update && \
+    apt-get install -y python3-dev build-essential libssl-dev libffi-dev libpq-dev
+
+RUN apt-get install -y python3.8-venv
+
+RUN apt-get install -y python3.9-venv
+
+RUN apt-get install -y python3.11-venv
 
 # # Installing conda
 RUN curl --output anaconda.sh https://repo.anaconda.com/archive/Anaconda3-2023.09-0-Linux-x86_64.sh
@@ -61,13 +77,15 @@ RUN ln -s /root/anaconda3/bin/conda /usr/local/bin/conda
 RUN rm anaconda.sh
 RUN conda install pytorch torchvision torchaudio cpuonly -c pytorch
 RUN export PATH=/usr/local/cuda/bin:$PATH
-
+RUN apt-get update && apt-get install -y python3.11-venv python3-dev build-essential libssl-dev libffi-dev libpq-dev
 
 # Create and activate a virtual environment
-RUN apt-get update && apt-get install -y python3.11-venv python3-dev build-essential libssl-dev libffi-dev libpq-dev
-RUN python -m venv /opt/llm_env
-RUN /opt/llm_env/bin/pip install --upgrade pip
-
+RUN python3.9 -m venv /opt/llm_env_3.9
+RUN /opt/llm_env_3.9/bin/pip install --upgrade pip
+RUN python3.8 -m venv /opt/llm_env_3.8
+RUN /opt/llm_env_3.8/bin/pip install --upgrade pip
+RUN python3.11 -m venv /opt/llm_env_3.11
+RUN /opt/llm_env_3.11/bin/pip install --upgrade pip
 
 WORKDIR /project
 # RUN mkdir project
@@ -186,3 +204,5 @@ CMD ["/bin/bash"]
 ## module
 
 # AdVANCEE rag 02
+
+# UBUNTU 22.4 doesn't support apt install 3.8 3.9 3.11
