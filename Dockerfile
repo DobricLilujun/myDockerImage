@@ -25,12 +25,13 @@ FROM paperspace/gradient-base:pt112-tf29-jax0314-py39-20220803
 # COPY requirements.txt .
 # RUN pip3 install -r requirements.txt
 
-EXPOSE 8888
-
 # RUN mkdir project
 COPY requirements.txt .
 RUN pip install -r requirements.txt
-CMD ["/bin/bash"]
+
+EXPOSE 8888 6006
+
+CMD jupyter lab --allow-root --ip=0.0.0.0 --no-browser --ServerApp.trust_xheaders=True --ServerApp.disable_check_xsrf=False --ServerApp.allow_remote_access=True --ServerApp.allow_origin='*' --ServerApp.allow_credentials=True
 
 
 # RUN ln -s /usr/bin/python3.11 /usr/local/bin/python3 && \
@@ -118,9 +119,6 @@ CMD ["/bin/bash"]
 # sudo apt-get -y install cuda
 
 
-# Pip install torch python版本对应的CUDA Torch 版本对应上才会下载 
-# 转用conda 保证可用性
-# 发现CUDA 10.1 不支持 ptyhon 3.11 安装python 3.9
 # sudo apt update
 # sudo apt install python3.9
 
