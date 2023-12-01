@@ -1,143 +1,137 @@
-FROM paperspace/gradient-base:pt112-tf29-jax0314-py39-20220803
+FROM ubuntu:20.04
+RUN yes | unminimize
+
+ENV LANG C.UTF-8
+ENV SHELL=/bin/bash
+ENV DEBIAN_FRONTEND=noninteractive
+ENV APT_INSTALL="apt-get install -y --no-install-recommends"
+ENV PIP_INSTALL="python3 -m pip --no-cache-dir install --upgrade"
+ENV GIT_CLONE="git clone --depth 10"
 
 
-# RUN apt-get update && \
-#     apt-get install -y apt-utils
+# Set Python version and virtual environment name as environment variables
+ENV PYTHON_VERSION=3.8
+ENV VENV_NAME=llm_env_${PYTHON_VERSION}
 
-# RUN apt-get update && \
-#     $APT_INSTALL \
-#     apt-utils \
-#     apt-transport-https \
-#     wget \
-#     git \
-#     vim \
-#     curl \
-#     openssh-client \
-#     unzip \
-#     zip \
-#     csvkit \
-#     sudo \
-#     software-properties-common\
-#     nvidia-cuda-toolkit\
-#     python3-pip
+# Install necessary packages and set Python version
+RUN apt-get update && \
+    apt-get install -y \
+    apt-utils \
+    apt-transport-https \
+    wget \
+    git \
+    vim \
+    curl \
+    openssh-client \
+    unzip \
+    zip \
+    csvkit \
+    sudo \
+    software-properties-common \
+    nvidia-cuda-toolkit \
+    python3-pip && \
+    add-apt-repository ppa:deadsnakes/ppa && \
+    apt-get update && \
+    apt-get install -y \
+    python${PYTHON_VERSION} \
+    python${PYTHON_VERSION}-dev \
+    build-essential \
+    libssl-dev \
+    libffi-dev \
+    libpq-dev && \
+    update-alternatives --install /usr/bin/python3 python3 /usr/bin/python${PYTHON_VERSION} 1 && \
+    apt-get install -y python3-pip python${PYTHON_VERSION}-venv
 
 
-# COPY requirements.txt .
-# RUN pip3 install -r requirements.txt
+RUN update-alternatives --set python3 /usr/bin/python${PYTHON_VERSION}
+RUN ln -s /usr/bin/python${PYTHON_VERSION} /usr/local/bin/python3
+RUN ln -s /usr/bin/python${PYTHON_VERSION} /usr/local/bin/python
 
-# RUN mkdir project
+# Create virtual environment and register kernel
+RUN python${PYTHON_VERSION} -m venv /opt/${VENV_NAME} && \
+    /opt/${VENV_NAME}/bin/pip install --upgrade pip && \
+    /opt/${VENV_NAME}/bin/pip install ipykernel && \
+    /opt/${VENV_NAME}/bin/python -m ipykernel install --user --name ENVNAME --display-name "${VENV_NAME} kernel"
+
+# Activate the virtual environment
+SHELL ["/bin/bash", "--login", "-c"]
+RUN source /opt/${VENV_NAME}/bin/activate
+RUN pip3 install --upgrade pip
+
+####################################################################################################################################################
+########################                                                                                                    ########################
+########################                                User defined area                                                   ########################
+########################                                                                                                    ########################
+####################################################################################################################################################
+
+# Method NUMBER 1
+# Execute all the pip install commands here
+# Installing requirements
+# RUN pip install --upgrade langchain \
+#     && pip install --upgrade llama-index \
+#     && pip install --upgrade pydantic \
+#     && pip install --upgrade openpyxl \
+#     && pip install PyMuPDF \
+#     && pip install --upgrade chromadb \
+#     && pip install pysqlite3-binary \
+#     && pip install sentence-
+
+# # Storage
+# RUN pip install --upgrade chromadb \
+#     && pip install --upgrade pysqlite3-binary \
+#     && pip install --upgrade llama-index \
+#     && pip install typing-inspect==0.8.0 \
+#     && pip install typing_extensions==4.5.0 \
+#     && pip install --upgrade sentence-transformers \
+#     && pip install faiss-gpu \
+#     && pip install annoy \
+#     && pip install qdrant-client \
+#     && pip install fuzzywuzzy \
+#     && pip install python-Levenshtein
+
+# # Loading the documents
+# RUN pip install --upgrade langchain \
+#     && pip install --upgrade pydantic \
+#     && pip install --upgrade openpyxl \
+#     && pip install pypdf
+
+# # Splitting the documents
+# RUN pip install --upgrade transformers \
+#     && pip install accelerate \
+#     && pip install --upgrade auto_gptq \
+#     && pip install --upgrade optimum
+
+# # Storage
+# RUN pip install --upgrade chromadb \
+#     && pip install pysqlite3-binary
+
+# # Defining QA Chain
+# RUN pip install python-Levenshtein
+
+# # Output
+# RUN pip install aspose-words \
+#     && pip install fpdf \
+#     && pip install gradio
+
+# RUN pip install --upgrade llama-index \
+#     && pip install typing-inspect==0.8.0 \
+#     && pip install typing_extensions==4.5.0 \
+#     && pip install --upgrade langchain \
+#     && pip install --upgrade pydantic
+
+# Method NUMBER 2
+# Replace the requirements.txt by a using pip freeze
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
+# RUN while read requirement; do sudo pip3 install $requirement; done < requirements.txt
+
+
+####################################################################################################################################################
+########################                                                                                                    ########################
+########################                                User defined area                                                   ########################
+########################                                                                                                    ########################
+####################################################################################################################################################
+
 EXPOSE 8888 6006
-
 CMD jupyter lab --allow-root --ip=0.0.0.0 --no-browser --ServerApp.trust_xheaders=True --ServerApp.disable_check_xsrf=False --ServerApp.allow_remote_access=True --ServerApp.allow_origin='*' --ServerApp.allow_credentials=True
-
-
-# RUN ln -s /usr/bin/python3.11 /usr/local/bin/python3 && \
-#     ln -s /usr/bin/python3.11 /usr/local/bin/python
-
-# ARG CUDA_VERSION=12.3.1
-# RUN sudo wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/cuda-ubuntu2004.pin
-# RUN mv cuda-ubuntu2004.pin /etc/apt/preferences.d/cuda-repository-pin-600
-# RUN sudo wget https://developer.download.nvidia.com/compute/cuda/12.3.1/local_installers/cuda-repo-ubuntu2004-12-3-local_12.3.1-545.23.08-1_amd64.deb
-# RUN sudo dpkg -i cuda-repo-ubuntu2004-12-3-local_12.3.1-545.23.08-1_amd64.deb
-# RUN sudo cp /var/cuda-repo-ubuntu2004-12-3-local/cuda-*-keyring.gpg /usr/share/keyrings/
-# RUN sudo apt-get update
-# RUN sudo apt-get -y install cuda-toolkit-12-3
-# ENV PATH=$PATH:/usr/local/cuda-12.3/bin
-# ENV LD_LIBRARY_PATH=/usr/local/cuda-12.3/lib64
-
-# RUN echo 'export LD_LIBRARY_PATH=$LD_LIBRARY_PATH:/usr/local/cuda-12.3/lib64' >> ~/.bashrc \
-#     && echo 'export PATH=$PATH:/usr/local/cuda-12.3/bin' >> ~/.bashrc \
-#     && echo 'export CUDA_HOME=/usr/local/cuda-12.3' >> ~/.bashrc
-
-# RUN sudo rm -rf cuda
-# RUN sudo ln -s /usr/local/cuda-12.3/  /usr/local/cuda
-
-# docker run --runtime=nvidia -it docker.io/library/llm_env:1.1
-
-# # Add Tini. Tini operates as a process subreaper for jupyter. This prevents kernel crashes.
-# ENV TINI_VERSION v0.6.0
-# ADD https://github.com/krallin/tini/releases/download/${TINI_VERSION}/tini /usr/bin/tini
-# RUN chmod +x /usr/bin/tini
-# ENTRYPOINT ["/usr/bin/tini", "--"]
-# CMD ["jupyter", "notebook", "--port=8888", "--no-browser", "--ip=0.0.0.0", "--allow-root"]
-
-
-# lacking torch and jupyterlab
-# jupyter notebook --port=8888 --no-browser --ip=0.0.0.0 --allow-root
-
-# CUDA version and torch version control
-# pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-# CUDA version update for CUDA 11.8
-# wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run
-
-# Install Toolkit 1.8
-# wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
-# sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
-# wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda-repo-ubuntu2204-11-8-local_11.8.0-520.61.05-1_amd64.deb
-# sudo dpkg -i cuda-repo-ubuntu2204-11-8-local_11.8.0-520.61.05-1_amd64.deb
-# sudo cp /var/cuda-repo-ubuntu2204-11-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
-# sudo apt-get update
-# sudo apt-get -y install cuda
-
-## Rebuild 
-# docker build -t llm_env_cuda_without_python_dep:2.0 .
-## not work
-
-## Try docker images on docker hub
-
-# docker pull nvidia/cuda:12.2.0-base-ubuntu22.04
-
-
-## For example, I've chosen the project RAG as a sample proejct
-# I'm trying to make the running environment and make sure that GPU can be used for training.
-
-# install jupyter and ipykernel
-
-
-## Try to install conda on images
-
-
-
-# jupyter notebook --port=8888 --no-browser --ip=0.0.0.0 --allow-root
-
-# CUDA version and torch version control
-# pip3 install torch torchvision torchaudio --index-url https://download.pytorch.org/whl/cu118
-# CUDA version update for CUDA 11.8
-# wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda_11.8.0_520.61.05_linux.run
-
-# Install Toolkit 1.8
-
-# wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2204/x86_64/cuda-ubuntu2204.pin
-# sudo mv cuda-ubuntu2204.pin /etc/apt/preferences.d/cuda-repository-pin-600
-# wget https://developer.download.nvidia.com/compute/cuda/11.8.0/local_installers/cuda-repo-ubuntu2204-11-8-local_11.8.0-520.61.05-1_amd64.deb
-# sudo dpkg -i cuda-repo-ubuntu2204-11-8-local_11.8.0-520.61.05-1_amd64.deb
-# sudo cp /var/cuda-repo-ubuntu2204-11-8-local/cuda-*-keyring.gpg /usr/share/keyrings/
-# sudo apt-get update
-# sudo apt-get -y install cuda
-
-
-# sudo apt update
-# sudo apt install python3.9
-
-
-# no docker image in container
-
-# install gptq
-# Cuda version is installed in tesla GPU not support pytorhc more than 1.13 so let's change the cuda version of the images.
-
-
-# check version compatible :https://pytorch.org/get-started/previous-versions/
-## Trying to install the version of 
-
-## Only tesla GPU K60 ONLY support maximum 11.4 and torch 1.12 but the autogptq needs to minimum version of torch with 1.13
-## impossible to fine-tuning large language model.
-
-## Let's try on paperspace and singularity
-## module
-
-# AdVANCEE rag 02
-
-# UBUNTU 22.4 doesn't support apt install 3.8 3.9 3.11

@@ -1,14 +1,6 @@
 FROM ubuntu:20.04
 RUN yes| unminimize
 
-# This docker includes basic softwares of linux based on ubuntu:22.04
-# Install python3.8,3.9,3.11
-# Install anaconda Anaconda3-2023.09
-# Install venv 3.8, 3.9,3.11
-# Creat a virtual environment using 3.11
-# CUDA 12.3 is installed but maybe not necessary
-# Work directory project CMD ["/bin/bash"]
-
 
 ENV LANG C.UTF-8
 ENV SHELL=/bin/bash
@@ -96,7 +88,7 @@ RUN apt-get update && apt-get install -y python3.8-venv python3-dev build-essent
 RUN ln -s /usr/bin/python3.8 /usr/local/bin/python3 && \
     ln -s /usr/bin/python3.8 /usr/local/bin/python
 
-RUN python -m venv /opt/llm_env_3.8
+# RUN python -m venv /opt/llm_env_3.8
 # RUN /opt/llm_env_3.8/bin/activate
 RUN pip install --upgrade pip
 
@@ -108,9 +100,12 @@ RUN pip install --upgrade pip
 COPY requirements.txt .
 RUN pip install -r requirements.txt
 
-EXPOSE 8888
+EXPOSE 8888 6006
 
 WORKDIR /project
+
+CMD jupyter lab --allow-root --ip=0.0.0.0 --no-browser --ServerApp.trust_xheaders=True --ServerApp.disable_check_xsrf=False --ServerApp.allow_remote_access=True --ServerApp.allow_origin='*' --ServerApp.allow_credentials=True
+
 
 # RUN mkdir project
 # COPY requirements.txt .

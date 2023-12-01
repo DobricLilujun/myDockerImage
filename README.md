@@ -1,167 +1,92 @@
+# How to build and use docker images 
 
+This is a small tutorial to guide you how to build and use the docker images in paperspace
 
-# myDockerImage
+## Prerequest
 
-This is a docker image that we can reuse it for our own project especially while doing deep learning and machine learning with cuda.
+1. A **docker image** you want to in the paperspace. As in foyer project, we can use the following github respository as a basic build images. 
 
+​	[Github Repository link for the docker images building](https://github.com/DobricLilujun/myDockerImage.git)
 
-## Table of Contents
+2. And you need to have your **docker** installed on your system.
 
-- [myDockerImage](#mydockerimage)
-  - [Table of Contents](#table-of-contents)
-  - [Overview](#overview)
-  - [Getting Started](#getting-started)
-    - [Prerequisites](#prerequisites)
-    - [Building the Docker Image](#building-the-docker-image)
+​	[Docker Installation Tutorial](https://docs.docker.com/engine/install/)
 
-## Overview
+3. **Your project** prepared with your python virtual environment and have python, cuda and torch version in your mind.
 
-There is a basic dockerfile in the project root respository and we can use it as a reference. 
+   I recommend you to use conda but only pip is okay.  You can check the torch and cuda version control from this: https://pytorch.org/blog/deprecation-cuda-python-support/
 
-Docker is an open-source platform for building, deploying, and running application containers. Its lightweight containers provide **"efficient resource utilization"** and **"fast startup and shutdown times"**. Docker containers are portable across different environments, enabling seamless deployment from development to production. The platform supports version control, ensuring consistent application versions across various settings. Additionally, Docker offers isolation between containers and the host system, facilitating secure and scalable application deployment. Its integration with automation tools allows for automated building, testing, and deployment of applications.
+4. An account of Docker Hub
 
-## Getting Started
+## Step by Step tutorial
 
-Basically, the docker image is based on the docker file which usually based on a ubuntu docker image.
+Following the follwowing:
 
-https://docs.docker.com/engine/install/ubuntu/
+```cmd
+# Git clone the docker repo
+git clone https://github.com/DobricLilujun/myDockerImage.git
+cd myDockerImage/
 
-<mark style="background-color: light green">Attention: Running of docker need the administrator to grant you the specific docker run authority . You don't need a sudoer but you need ask for docker command authority which uses part of the sudoer authority.</mark>
+# Check Docker Follw
+docker --version  # Docker version 24.0.2, build cb74dfc
 
-The following command should be runnable for ubuntu system
+# Check if you are in the right environment
+source activate [Your path to env]/bin/activate  # if you use conda: conda activate [Your env name]
 
-```bash
-for pkg in docker.io docker-doc docker-compose docker-compose-v2 podman-docker containerd runc; do sudo apt-get remove $pkg; done
+# Two method to export your python env
+# Method NUMBER 1: Replace the requirements.txt by a using pip freeze
+pip freeze > requirements.txt
+# Method NUMBER 2: Execute all the pip install commands here and fill all commends in dockerfiles
 
-# Add Docker's official GPG key:
-sudo apt-get update
-sudo apt-get install ca-certificates curl gnupg
-sudo install -m 0755 -d /etc/apt/keyrings
-curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-sudo chmod a+r /etc/apt/keyrings/docker.gpg
-
-# Add the repository to Apt sources:
-echo \
-  "deb [arch="$(dpkg --print-architecture)" signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu \
-  "$(. /etc/os-release && echo "$VERSION_CODENAME")" stable" | \
-  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
-sudo apt-get update
-
-sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
-
-sudo docker run hello-world
+# Login to your docker account
+docker login  # input your docker username and password
 ```
 
+Try to build the docker image and push it to docker hub
 
+**Attention**: If you fail to build some images, slight change the docker file but choose the same image name but different versions which can save a lot of time in building 
 
-### Prerequisites
-
-Install your own docker on your system by following the instruction:
-
-### Building and usage of Docker Image
-
-Build your own image by running this 
-
-```bash
-docker build -t your-image-name:tag .
-# example
-# docker build -t llm_env_conda:1.0 .
+```cmd
+# Build and push your own docker image 
+# If you push an image and you found the error of Request is denied, then follow this instruction to solve it: https://www.youtube.com/watch?v=iIYw0Z0AI1c
+# Template
+docker build -t [Your image name]:[Your image version] .
+docker tag [Your image name]:[Your image version] [dockerhub username]/[Your image name]:[Your image version]
+docker push [dockerhub username]/[Your image name]:[Your image version]
 ```
 
-Get all docker images on the devices.
+The following is an example I use:
 
-```bash
-docker images
-# possible results
-
-REPOSITORY                                                                       TAG                                        IMAGE ID       CREATED          SIZE
-llm_env_conda                                                                    1.0                                        38449d13aadc   40 minutes ago   13.3GB
-```
-
-Run your own image by running the following
-
---gpus all 指的是使用所有gpu
-
---it 指的是使用interactive的方式去执行，也就是你可以直接像linux系统一样进行操作
-
-```bash
-docker run --rm --gpus all -it llm_env_conda:1.0
-```
-
-<mark style="background-color: red">Attention: Please don't use other command like docker run nvidia etc because it's alread obsolete.</mark>
-
-
-
-### Build environment with python
-
-#### Choose the correct compatible python version
-
-The compatible python version 
-
-#### Use CONDA instead of venv
-
-
-
-#### Verify the CUDA version with your graphical card and  torch version needed
-
-
-
-#### Build your own images compatible to your project and push
-
-
-
-
-
-Export and push your project online or build locally by your self using dockerfile. （login in docker）
+```cmd
+# Building
+docker build -t llm_docker_test:1.0 .
+# Running and test
+docker run -t llm_docker_test:1.0
+# Tag
+docker tag llm_docker_test:1.0 lujunlicareerist/llm_docker_test:1.0
+# Push
+docker push lujunlicareerist/llm_docker_test:1.0
 
 ```
-Request is denied?
-how to solve:
-https://www.youtube.com/watch?v=iIYw0Z0AI1c
-```
 
+## Use it from paperspace
 
+1. Create one notebook
 
-#### Online available docker image
+2. Choose start from Scratch
 
+3. Choose "View advanced options"
 
+4. Choose the docker imaged you created: 
 
-1. **Choose the correct compatible python version**
+![4](https://raw.githubusercontent.com/DobricLilujun/imagesAll/main/images4.PNG)
 
-2. **Suggest CONDA instead of venv** 
+5. Input your github details
 
-3. **Try to verify the corresponding CUDA version and find the latest compatible torch version to cuda and your graphical card ? how**
+   ![5](https://raw.githubusercontent.com/DobricLilujun/imagesAll/main/images5.PNG)
 
-4. **Try to make sure CUDA is available ? How to make sure and how to verify?**
+6. Only input [docker_user_name]/[docker_image_name]:[image_version] is enough to start the images
 
-5. **Try to build your project locally and export the requirement.txt**
+![6](https://raw.githubusercontent.com/DobricLilujun/imagesAll/main/images6.PNG)
 
-6. **Build your own images compatible to your project**
-
-7. **Export and push your project online or build locally by your self using dockerfile. （login in docker）**
-
-   ```
-   
-   ```
-
-
-
-
-
-An example of using image and build your own image
-
-Use the docker image in **paper space** instead of buiding env by your self
-
-Cannot use docker but we can use other things 
-
-Todo:
-
- How to use docker image in singularity
-
-
-
-The docker image cannot be used in paper space . 
-
-They already build the environment 
-
-But we can still build our environment in hpc and other things .
+Enjoy it!
