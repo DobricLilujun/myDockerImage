@@ -12,6 +12,7 @@ ENV GIT_CLONE="git clone --depth 10"
 # Set Python version and virtual environment name as environment variables
 ENV PYTHON_VERSION=3.8
 ENV VENV_NAME=llm_env_${PYTHON_VERSION}
+ENV VENV_NAME_AUX=llm_env_aux${PYTHON_VERSION}
 
 # Install necessary packages and set Python version
 RUN apt-get update && \
@@ -52,6 +53,14 @@ RUN python${PYTHON_VERSION} -m venv /opt/${VENV_NAME} && \
     /opt/${VENV_NAME}/bin/pip install --upgrade pip && \
     /opt/${VENV_NAME}/bin/pip install ipykernel && \
     /opt/${VENV_NAME}/bin/python -m ipykernel install --user --name ENVNAME --display-name "${VENV_NAME} kernel"
+
+
+# Create virtual environment and register kernel
+RUN python${PYTHON_VERSION} -m venv /opt/${VENV_NAME_AUX} && \
+    /opt/${VENV_NAME_AUX}/bin/pip install --upgrade pip && \
+    /opt/${VENV_NAME_AUX}/bin/pip install ipykernel && \
+    /opt/${VENV_NAME_AUX}/bin/python -m ipykernel install --user --name ENVNAME --display-name "${VENV_NAME_AUX} kernel"
+
 
 # Activate the virtual environment
 SHELL ["/bin/bash", "--login", "-c"]
